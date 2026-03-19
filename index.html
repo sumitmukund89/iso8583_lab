@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+
+<!-- Primary Meta -->
+<title>ISO 8583 Developer Lab — Payments Message Tool</title>
+<meta name="description" content="Free browser-based ISO 8583 tool for payment professionals. Parse & decode messages, build valid hex messages, look up DE39 response codes, and learn the standard from scratch. No install needed."/>
+<meta name="keywords" content="ISO 8583, payments, fintech, message parser, decoder, response codes, EMV, card payments, acquirer, issuer, PAN, bitmap, MTI, developer tool"/>
+<meta name="author" content="ISO 8583 Developer Lab"/>
+
+<!-- Open Graph — controls how LinkedIn/Twitter/WhatsApp previews look -->
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="ISO 8583 Developer Lab — Free Payments Message Tool"/>
+<meta property="og:description" content="Parse & decode ISO 8583 messages, build hex messages visually, look up all DE39 response codes, and learn card payment fundamentals. Built for developers, analysts & PMs in the payments industry."/>
+<meta property="og:image" content="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=630&fit=crop"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="ISO 8583 Developer Lab — Payments Message Tool"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="ISO 8583 Developer Lab — Free Payments Tool"/>
+<meta name="twitter:description" content="Parse & decode ISO 8583 messages, build valid hex, look up response codes. Free tool for payment developers, analysts & PMs."/>
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=630&fit=crop"/>
+
+<!-- Favicon -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f8ef7'/><text y='72' x='50' text-anchor='middle' font-size='52' font-weight='900' fill='white' font-family='monospace'>8583</text></svg>"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3450;--accent:#4f8ef7;--accent2:#7c5cfc;--success:#22c55e;
+  --warning:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --green:#10b981;--orange:#f97316;--purple:#a855f7;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100}
+.nav-brand{display:flex;align-items:center;gap:10px;padding:14px 0;margin-right:32px}
+.nav-brand .logo{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff}
+.nav-brand span{font-weight:700;font-size:16px;color:var(--text)}
+.nav-brand small{color:var(--text3);font-size:11px;margin-left:4px}
+.nav-tabs{display:flex;gap:2px;flex:1}
+.nav-tab{padding:16px 18px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.nav-tab:hover{color:var(--text);background:var(--surface2)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-tab .tab-icon{font-size:15px}
+.page{display:none;padding:28px;max-width:1400px;margin:0 auto}
+.page.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.card-header h3{font-size:15px;font-weight:600}
+.card-header .badge{background:var(--surface3);color:var(--text2);font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.card-desc{color:var(--text2);font-size:13px;margin-bottom:16px;line-height:1.6}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+label{font-size:12px;color:var(--text2);font-weight:600;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:8px;font-size:13px;outline:none;transition:border .2s;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;font-family:'Courier New',monospace;font-size:12px}
+.btn{padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.tag-blue{background:#1e3a5f;color:#60a5fa}
+.tag-green{background:#14532d;color:#4ade80}
+.tag-red{background:#450a0a;color:#f87171}
+.tag-yellow{background:#422006;color:#fbbf24}
+.tag-purple{background:#2e1065;color:#c084fc}
+.tag-gray{background:var(--surface3);color:var(--text2)}
+.hex-input-wrap textarea{min-height:90px;letter-spacing:1px}
+.decode-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.result-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.mti-box{background:linear-gradient(135deg,#1e2d4f,#1a2040);border:1px solid #2e4070;border-radius:10px;padding:16px;margin-bottom:16px}
+.mti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
+.mti-cell{background:var(--surface3);border-radius:8px;padding:10px;text-align:center}
+.mti-cell .val{font-size:20px;font-weight:800;color:var(--accent);font-family:'Courier New',monospace}
+.mti-cell .lbl{font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase}
+.mti-cell .desc{font-size:11px;color:var(--text2);margin-top:2px}
+.bitmap-grid{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin-bottom:16px}
+.bit-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:default;transition:all .2s}
+.bit-cell.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.bit-cell.off{background:var(--surface3);color:var(--text3)}
+.bit-cell:hover{transform:scale(1.1)}
+.de-table{width:100%;border-collapse:collapse}
+.de-table th{background:var(--surface3);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.de-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top}
+.de-table tr:hover td{background:var(--surface2)}
+.de-num{font-family:'Courier New',monospace;font-weight:700;color:var(--accent);font-size:12px}
+.de-val{font-family:'Courier New',monospace;font-size:12px;color:var(--success);word-break:break-all}
+.de-cat{width:8px;height:8px;border-radius:50%;display:inline-block}
+.mti-select-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.mti-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s}
+.mti-card:hover,.mti-card.selected{border-color:var(--accent);background:#1a2440}
+.mti-card .mti-code{font-family:'Courier New',monospace;font-size:18px;font-weight:800;color:var(--accent)}
+.mti-card .mti-name{font-size:12px;color:var(--text2);margin-top:4px}
+.mti-card .mti-desc{font-size:11px;color:var(--text3);margin-top:2px}
+.de-builder-row{display:grid;grid-template-columns:80px 1fr 120px auto;gap:10px;align-items:center;background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:8px;border:1px solid var(--border)}
+.de-builder-row .de-info{font-size:11px;color:var(--text3)}
+.de-builder-row input{background:var(--surface3)}
+.output-box{background:#0a0f1a;border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px}
+.output-box pre{font-family:'Courier New',monospace;font-size:13px;color:var(--success);word-break:break-all;white-space:pre-wrap;line-height:1.8}
+.output-label{font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.copy-btn{float:right;margin-top:-2px}
+.search-bar{position:relative;margin-bottom:20px}
+.search-bar input{padding-left:38px;font-size:14px}
+.search-bar .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px}
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:all .2s}
+.filter-btn:hover,.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.rc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.rc-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .2s}
+.rc-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.rc-code{font-family:'Courier New',monospace;font-size:28px;font-weight:800;margin-bottom:6px}
+.rc-name{font-size:13px;font-weight:600;margin-bottom:6px}
+.rc-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.rc-footer{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.retry-info{font-size:11px;color:var(--text3);margin-top:6px;padding-top:8px;border-top:1px solid var(--border)}
+.learn-hero{background:linear-gradient(135deg,#1a2040,#1a1030);border:1px solid #2e3a60;border-radius:14px;padding:28px;margin-bottom:24px;text-align:center}
+.learn-hero h2{font-size:22px;font-weight:800;margin-bottom:8px}
+.learn-hero p{color:var(--text2);font-size:14px;max-width:600px;margin:0 auto}
+.learn-path{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:28px}
+.learn-module{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.learn-module:hover{border-color:var(--accent);transform:translateY(-3px)}
+.learn-module .mod-icon{font-size:28px;margin-bottom:10px}
+.learn-module h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.learn-module p{font-size:12px;color:var(--text2);line-height:1.5}
+.learn-module .mod-level{position:absolute;top:12px;right:12px}
+.learn-content{display:none}
+.learn-content.active{display:block}
+.lesson-nav{display:flex;gap:10px;margin-bottom:20px;align-items:center}
+.back-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.lesson-body{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;line-height:1.8}
+.lesson-body h2{font-size:20px;font-weight:800;margin-bottom:6px}
+.lesson-body .subtitle{color:var(--text2);font-size:13px;margin-bottom:24px}
+.lesson-body h3{font-size:15px;font-weight:700;margin:22px 0 10px;color:var(--accent)}
+.lesson-body p{font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.7}
+.lesson-body ul{padding-left:20px;margin-bottom:12px}
+.lesson-body ul li{font-size:13px;color:var(--text2);margin-bottom:6px;line-height:1.6}
+.info-box{background:#1a2a1a;border-left:3px solid var(--success);border-radius:0 8px 8px 0;padding:14px 16px;margin:14px 0;font-size:13px;color:#a0dba0}
+.warn-box{background:#2a1e10;border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:14px 16px;margin:14px 0;font-size:13px;color:#fcd99d}
+.flow-diagram{background:var(--surface2);border-radius:10px;padding:20px;margin:16px 0;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.flow-node{background:var(--surface3);border-radius:8px;padding:10px 14px;font-size:12px;font-weight:600;text-align:center;min-width:90px}
+.flow-arrow{color:var(--text3);font-size:16px}
+.code-block{background:#0a0f1a;border:1px solid var(--border);border-radius:8px;padding:14px;font-family:'Courier New',monospace;font-size:12px;color:var(--success);margin:12px 0;overflow-x:auto}
+.tooltip{position:relative;cursor:help}
+.tooltip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid var(--border);color:var(--text);font-size:11px;padding:6px 10px;border-radius:6px;white-space:nowrap;z-index:999;max-width:240px;white-space:normal;line-height:1.4;text-align:left}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.items-center{align-items:center}
+.text-sm{font-size:12px}.text-xs{font-size:11px}.text-mono{font-family:'Courier New',monospace}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:12px}
+.alert-info{background:#1e3a5f;color:#93c5fd;border:1px solid #2563eb}
+.alert-error{background:#450a0a;color:#f87171;border:1px solid var(--danger)}
+.alert-success{background:#14532d;color:#86efac;border:1px solid var(--success)}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-brand">
+    <div class="logo">8583</div>
+    <div><span>ISO 8583 Lab</span><small>Payments Dev Tool</small></div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('decoder')" id="tab-decoder"><span class="tab-icon">🔍</span> Parser / Decoder</div>
+    <div class="nav-tab" onclick="showPage('builder')" id="tab-builder"><span class="tab-icon">🔧</span> Message Builder</div>
+    <div class="nav-tab" onclick="showPage('rcodes')" id="tab-rcodes"><span class="tab-icon">📋</span> Response Codes</div>
+    <div class="nav-tab" onclick="showPage('learn')" id="tab-learn"><span class="tab-icon">🎓</span> Learn ISO 8583</div>
+  </div>
+</div>
+
+<!-- DECODER -->
+<div class="page active" id="page-decoder">
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><span style="font-size:20px">🔍</span><h3>Message Parser & Decoder</h3><span class="badge">ISO 8583</span></div>
+    <p class="card-desc">Paste a raw ISO 8583 hex-encoded message. The tool decodes MTI, bitmap, and all Data Elements with human-readable labels.</p>
+    <div class="hex-input-wrap">
+      <label>Raw ISO 8583 Message (Hex String)</label>
+      <textarea id="hexInput" rows="4" placeholder="Paste ISO 8583 hex string here, or use a sample below..."></textarea>
+    </div>
+    <div class="decode-actions">
+      <button class="btn btn-primary" onclick="decodeMessage()">⚡ Decode Message</button>
+      <button class="btn btn-secondary" onclick="loadSample('auth')">Load Auth Request (0200)</button>
+      <button class="btn btn-secondary" onclick="loadSample('authresp')">Load Auth Response (0210)</button>
+      <button class="btn btn-secondary" onclick="loadSample('reversal')">Load Reversal (0400)</button>
+      <button class="btn btn-secondary btn-sm" onclick="clearDecoder()">✕ Clear</button>
+    </div>
+  </div>
+  <div id="decodeResult"></div>
+</div>
+
+<!-- BUILDER -->
+<div class="page" id="page-builder">
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><span style="font-size:20px">🔧</span><h3>Message Builder</h3><span class="badge">Construct ISO 8583</span></div>
+    <p class="card-desc">Select an MTI, fill in the Data Elements. The tool auto-computes the bitmap and generates the final hex-encoded ISO 8583 message.</p>
+    <label>Step 1 — Select Message Type (MTI)</label>
+    <div class="mti-select-grid" id="mtiSelectGrid"></div>
+    <div id="deFieldsSection" style="display:none">
+      <hr class="divider">
+      <label>Step 2 — Fill Data Elements <span style="color:var(--text3);font-size:11px;font-weight:400">(* = mandatory for this message type)</span></label>
+      <div id="deFieldRows" class="mt12"></div>
+      <div class="mt16 flex gap8">
+        <button class="btn btn-primary" onclick="buildMessage()">⚙️ Generate Message</button>
+        <button class="btn btn-secondary" onclick="clearBuilder()">✕ Reset</button>
+      </div>
+      <div id="builderOutput"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESPONSE CODES -->
+<div class="page" id="page-rcodes">
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><span style="font-size:20px">📋</span><h3>Response Code Lookup (DE 39)</h3><span class="badge">Complete Reference</span></div>
+    <p class="card-desc">All standard ISO 8583 DE 39 response codes with meaning, category, retry guidance, and customer-facing message suggestions.</p>
+    <div class="search-bar"><span class="search-icon">🔍</span><input type="text" id="rcSearch" placeholder="Search by code, name, or description..." oninput="filterRC()"></div>
+    <div class="filter-row" id="rcFilters">
+      <button class="filter-btn active" data-cat="all" onclick="setCatFilter(this,'all')">All Codes</button>
+      <button class="filter-btn" data-cat="approved" onclick="setCatFilter(this,'approved')">✅ Approved</button>
+      <button class="filter-btn" data-cat="soft" onclick="setCatFilter(this,'soft')">🟡 Soft Decline</button>
+      <button class="filter-btn" data-cat="hard" onclick="setCatFilter(this,'hard')">🔴 Hard Decline</button>
+      <button class="filter-btn" data-cat="system" onclick="setCatFilter(this,'system')">⚙️ System</button>
+      <button class="filter-btn" data-cat="referral" onclick="setCatFilter(this,'referral')">📞 Referral</button>
+    </div>
+    <div id="rcStats" class="text-xs" style="color:var(--text3);margin-bottom:12px"></div>
+    <div class="rc-grid" id="rcGrid"></div>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div class="page" id="page-learn">
+  <div id="learnHome">
+    <div class="learn-hero">
+      <div style="font-size:40px;margin-bottom:12px">🎓</div>
+      <h2>Learn ISO 8583 & Payments</h2>
+      <p>From zero to payment expert. Bite-sized modules covering how card payments work, what ISO 8583 does, and how to use it confidently.</p>
+    </div>
+    <div class="learn-path" id="learnModules"></div>
+  </div>
+  <div id="learnDetail" class="learn-content"></div>
+</div>
+
+<script>
+// ===================== FIELD SPEC =====================
+// fmt: N=numeric fixed, A=alpha fixed, AN=alphanumeric fixed, ANS=alphanumeric+special fixed,
+//      B=binary (len=bytes, encoded as hex chars in ASCII mode), LLVAR=LL+var, LLLVAR=LLL+var
+// For fixed fields: N pads left with '0', AN/ANS/A pad right with ' '
+// For B fields: value is already hex string of exactly len*2 chars
+const DE_SPEC = {
+  1:{name:"Secondary Bitmap",fmt:"B",len:8,cat:"bitmap",desc:"Indicates presence of secondary bitmap (bits 65–128)"},
+  2:{name:"Primary Account Number (PAN)",fmt:"LLVAR",len:19,cat:"card",desc:"Cardholder card number (up to 19 digits)"},
+  3:{name:"Processing Code",fmt:"N",len:6,cat:"txn",desc:"Transaction type: first 2=txn (00=purchase,01=cash,20=refund,40=transfer), next 2=from acct, last 2=to acct"},
+  4:{name:"Transaction Amount",fmt:"N",len:12,cat:"amount",desc:"Amount in smallest currency unit (e.g. cents). $42.50 = 000000004250"},
+  5:{name:"Settlement Amount",fmt:"N",len:12,cat:"amount",desc:"Amount for settlement"},
+  6:{name:"Cardholder Billing Amount",fmt:"N",len:12,cat:"amount",desc:"Amount in cardholder billing currency"},
+  7:{name:"Transmission Date & Time",fmt:"N",len:10,cat:"time",desc:"MMDDhhmmss — when message was transmitted"},
+  8:{name:"Billing Fee Amount",fmt:"N",len:8,cat:"amount",desc:"Fee charged to cardholder"},
+  9:{name:"Settlement Conversion Rate",fmt:"N",len:8,cat:"amount",desc:"Exchange rate for settlement"},
+  10:{name:"Cardholder Billing Conv. Rate",fmt:"N",len:8,cat:"amount",desc:"Exchange rate for cardholder billing"},
+  11:{name:"Systems Trace Audit Number (STAN)",fmt:"N",len:6,cat:"txn",desc:"Unique 6-digit number per transaction assigned by originator. Used to match requests/responses"},
+  12:{name:"Local Transaction Time",fmt:"N",len:6,cat:"time",desc:"hhmmss — local time at point of transaction"},
+  13:{name:"Local Transaction Date",fmt:"N",len:4,cat:"time",desc:"MMDD — local date"},
+  14:{name:"Expiration Date",fmt:"N",len:4,cat:"card",desc:"YYMM — card expiry date"},
+  15:{name:"Settlement Date",fmt:"N",len:4,cat:"time",desc:"MMDD — settlement date"},
+  16:{name:"Currency Conversion Date",fmt:"N",len:4,cat:"time",desc:"MMDD — date of currency conversion"},
+  17:{name:"Capture Date",fmt:"N",len:4,cat:"time",desc:"MMDD — date captured"},
+  18:{name:"Merchant Type (MCC)",fmt:"N",len:4,cat:"merchant",desc:"Merchant Category Code — identifies business type (e.g. 5411=Grocery, 5812=Restaurant)"},
+  19:{name:"Acquiring Institution Country Code",fmt:"N",len:3,cat:"institution",desc:"ISO 3166 numeric country code of acquirer"},
+  20:{name:"PAN Extended Country Code",fmt:"N",len:3,cat:"card",desc:"Country code for extended PAN"},
+  21:{name:"Forwarding Institution Country Code",fmt:"N",len:3,cat:"institution",desc:"ISO 3166 country code of forwarding institution"},
+  22:{name:"Point of Service Entry Mode",fmt:"N",len:3,cat:"terminal",desc:"How PAN/PIN were entered: 010=manual, 021=mag stripe, 051=chip+PIN, 071=contactless NFC"},
+  23:{name:"Application PAN Sequence Number",fmt:"N",len:3,cat:"card",desc:"Differentiates cards with same PAN"},
+  24:{name:"Network International ID (NII)",fmt:"N",len:3,cat:"network",desc:"Identifies the network/scheme"},
+  25:{name:"Point of Service Condition Code",fmt:"N",len:2,cat:"terminal",desc:"00=normal, 59=ecom/MOTO (card not present), 08=mail order"},
+  26:{name:"POS PIN Capture Code",fmt:"N",len:2,cat:"terminal",desc:"Maximum PIN length"},
+  27:{name:"Authorization ID Response Length",fmt:"N",len:1,cat:"auth",desc:"Length of authorization ID in DE38"},
+  28:{name:"Transaction Fee Amount",fmt:"AN",len:9,cat:"amount",desc:"Fee amount: sign(C/D) + 8 digits"},
+  29:{name:"Settlement Fee Amount",fmt:"AN",len:9,cat:"amount",desc:"Settlement fee: sign + 8 digits"},
+  30:{name:"Transaction Processing Fee",fmt:"AN",len:9,cat:"amount",desc:"Processing fee: sign + 8 digits"},
+  31:{name:"Settlement Processing Fee",fmt:"AN",len:9,cat:"amount",desc:"Settlement processing fee: sign + 8 digits"},
+  32:{name:"Acquiring Institution ID Code",fmt:"LLVAR",len:11,cat:"institution",desc:"Identifies the acquiring institution (BIN)"},
+  33:{name:"Forwarding Institution ID Code",fmt:"LLVAR",len:11,cat:"institution",desc:"Identifies the forwarding institution"},
+  34:{name:"PAN Extended",fmt:"LLVAR",len:28,cat:"card",desc:"Extended PAN"},
+  35:{name:"Track 2 Data",fmt:"LLVAR",len:37,cat:"card",desc:"Magstripe track 2: PAN=expiry=service code=discretionary"},
+  36:{name:"Track 3 Data",fmt:"LLLVAR",len:104,cat:"card",desc:"Magstripe track 3 data"},
+  37:{name:"Retrieval Reference Number (RRN)",fmt:"AN",len:12,cat:"txn",desc:"12-char acquirer reference for retrieval, disputes, and reversals"},
+  38:{name:"Authorization ID Response",fmt:"AN",len:6,cat:"auth",desc:"6-char approval code from issuer — printed on receipt"},
+  39:{name:"Response Code",fmt:"AN",len:2,cat:"response",desc:"2-char result: 00=Approved, 05=DNH, 51=Insuff Funds, 91=Issuer Down..."},
+  40:{name:"Service Restriction Code",fmt:"N",len:3,cat:"card",desc:"Defines where card may be used"},
+  41:{name:"Card Acceptor Terminal ID",fmt:"ANS",len:8,cat:"terminal",desc:"8-char terminal identifier at point of transaction"},
+  42:{name:"Card Acceptor ID Code",fmt:"ANS",len:15,cat:"merchant",desc:"15-char merchant ID assigned by acquirer"},
+  43:{name:"Card Acceptor Name/Location",fmt:"ANS",len:40,cat:"merchant",desc:"Merchant name and location (city, state/country)"},
+  44:{name:"Additional Response Data",fmt:"LLVAR",len:25,cat:"response",desc:"Additional data in response messages"},
+  45:{name:"Track 1 Data",fmt:"LLVAR",len:76,cat:"card",desc:"Magstripe track 1: name, PAN, expiry"},
+  46:{name:"Additional Data — ISO",fmt:"LLLVAR",len:999,cat:"other",desc:"Additional ISO-defined data"},
+  47:{name:"Additional Data — National",fmt:"LLLVAR",len:999,cat:"other",desc:"Nationally-defined additional data"},
+  48:{name:"Additional Data — Private",fmt:"LLLVAR",len:999,cat:"other",desc:"Private/proprietary data (TLV or acquirer-defined)"},
+  49:{name:"Currency Code, Transaction",fmt:"N",len:3,cat:"amount",desc:"ISO 4217 numeric code: 840=USD, 356=INR, 978=EUR, 826=GBP, 036=AUD, 156=CNY, 392=JPY, 566=NGN, 710=ZAR, 986=BRL"},
+  50:{name:"Currency Code, Settlement",fmt:"N",len:3,cat:"amount",desc:"ISO 4217 settlement currency"},
+  51:{name:"Currency Code, Cardholder Billing",fmt:"N",len:3,cat:"amount",desc:"ISO 4217 billing currency"},
+  52:{name:"Personal ID Number (PIN) Data",fmt:"B",len:8,cat:"security",desc:"Encrypted PIN block (8 bytes = 16 hex chars)"},
+  53:{name:"Security Related Control Info",fmt:"N",len:16,cat:"security",desc:"PIN encryption key/index info"},
+  54:{name:"Additional Amounts",fmt:"LLLVAR",len:120,cat:"amount",desc:"Cash back, tip, surcharge; each 20-char entry: 2=acct type, 2=amount type, 3=currency, 1=sign, 12=amount"},
+  55:{name:"ICC Data (EMV)",fmt:"LLLVAR",len:255,cat:"emv",desc:"Chip card TLV data: cryptogram (9F26), ATC (9F36), TVR (95), IAD (9F10), etc."},
+  56:{name:"Reserved ISO",fmt:"LLLVAR",len:999,cat:"other",desc:"Reserved for ISO use"},
+  57:{name:"Reserved National",fmt:"LLLVAR",len:999,cat:"other",desc:"Reserved for national use"},
+  58:{name:"Reserved National",fmt:"LLLVAR",len:999,cat:"other",desc:"Reserved for national use"},
+  59:{name:"Reserved National",fmt:"LLLVAR",len:999,cat:"other",desc:"Reserved for national use"},
+  60:{name:"Reserved Private",fmt:"LLLVAR",len:999,cat:"other",desc:"Private use"},
+  61:{name:"Reserved Private",fmt:"LLLVAR",len:999,cat:"other",desc:"Private use"},
+  62:{name:"Reserved Private",fmt:"LLLVAR",len:999,cat:"other",desc:"Private use"},
+  63:{name:"Reserved Private",fmt:"LLLVAR",len:999,cat:"other",desc:"Private use"},
+  64:{name:"Message Authentication Code",fmt:"B",len:8,cat:"security",desc:"MAC to verify message integrity (16 hex chars)"},
+  65:{name:"Extended Bitmap Indicator",fmt:"B",len:8,cat:"bitmap",desc:"Tertiary bitmap signal"},
+  70:{name:"Network Management Info Code",fmt:"N",len:3,cat:"network",desc:"001=Sign-On, 002=Sign-Off, 101=Key Exchange, 301=Echo Test"},
+  90:{name:"Original Data Elements",fmt:"N",len:42,cat:"txn",desc:"For reversals: original MTI(4)+STAN(6)+date(10)+acqID(11)+fwdID(11)"},
+  95:{name:"Replacement Amounts",fmt:"N",len:42,cat:"amount",desc:"Partial approval/reversal replacement amounts"},
+  100:{name:"Receiving Institution ID Code",fmt:"LLVAR",len:11,cat:"institution",desc:"Identifies receiving institution"},
+  102:{name:"Account ID 1",fmt:"LLVAR",len:28,cat:"card",desc:"Primary account identifier (e.g. mobile number for UPI)"},
+  103:{name:"Account ID 2",fmt:"LLVAR",len:28,cat:"card",desc:"Secondary account identifier"},
+  128:{name:"Secondary MAC",fmt:"B",len:8,cat:"security",desc:"Secondary message authentication code"}
+};
+
+const CAT_COLORS = {
+  bitmap:"#4f8ef7",card:"#a855f7",txn:"#22c55e",amount:"#f59e0b",
+  time:"#06b6d4",terminal:"#f97316",merchant:"#ec4899",institution:"#8b5cf6",
+  auth:"#10b981",response:"#ef4444",security:"#dc2626",emv:"#7c3aed",
+  network:"#0891b2",other:"#64748b"
+};
+
+const CURRENCIES = {
+  '840':'USD 🇺🇸','978':'EUR 🇪🇺','826':'GBP 🇬🇧','356':'INR 🇮🇳',
+  '036':'AUD 🇦🇺','124':'CAD 🇨🇦','392':'JPY 🇯🇵','702':'SGD 🇸🇬',
+  '344':'HKD 🇭🇰','156':'CNY 🇨🇳','986':'BRL 🇧🇷','710':'ZAR 🇿🇦',
+  '566':'NGN 🇳🇬','484':'MXN 🇲🇽','410':'KRW 🇰🇷','554':'NZD 🇳🇿',
+  '756':'CHF 🇨🇭','752':'SEK 🇸🇪','208':'DKK 🇩🇰','348':'HUF 🇭🇺',
+  '608':'PHP 🇵🇭','764':'THB 🇹🇭','458':'MYR 🇲🇾','360':'IDR 🇮🇩'
+};
+
+const MTI_DB = {
+  "0100":{name:"Authorization Request",class:"Auth",origin:"Acquirer → Issuer",desc:"Pre-authorization check before completing transaction"},
+  "0110":{name:"Authorization Response",class:"Auth",origin:"Issuer → Acquirer",desc:"Issuer yes/no decision on authorization"},
+  "0120":{name:"Authorization Advice",class:"Auth",origin:"Acquirer → Issuer",desc:"Advise issuer of completed authorization"},
+  "0130":{name:"Authorization Advice Response",class:"Auth",origin:"Issuer → Acquirer",desc:"Acknowledgement of auth advice"},
+  "0200":{name:"Financial Transaction Request",class:"Financial",origin:"Acquirer → Issuer",desc:"Requests funds to be moved (purchase / withdrawal)"},
+  "0210":{name:"Financial Transaction Response",class:"Financial",origin:"Issuer → Acquirer",desc:"Response to financial transaction request"},
+  "0220":{name:"Financial Transaction Advice",class:"Financial",origin:"Acquirer → Issuer",desc:"Advise of completed financial transaction"},
+  "0221":{name:"Financial Transaction Advice (Repeat)",class:"Financial",origin:"Acquirer → Issuer",desc:"Repeat of financial advice"},
+  "0230":{name:"Financial Advice Response",class:"Financial",origin:"Issuer → Acquirer",desc:"Acknowledgement of financial advice"},
+  "0400":{name:"Reversal Request",class:"Reversal",origin:"Acquirer → Issuer",desc:"Cancel or reverse a previous transaction"},
+  "0410":{name:"Reversal Response",class:"Reversal",origin:"Issuer → Acquirer",desc:"Response to reversal request"},
+  "0420":{name:"Reversal Advice",class:"Reversal",origin:"Acquirer → Issuer",desc:"Advise issuer of completed reversal"},
+  "0430":{name:"Reversal Advice Response",class:"Reversal",origin:"Issuer → Acquirer",desc:"Acknowledgement of reversal advice"},
+  "0800":{name:"Network Management Request",class:"Network",origin:"Acquirer → Network",desc:"Sign-on, sign-off, key exchange"},
+  "0810":{name:"Network Management Response",class:"Network",origin:"Issuer → Acquirer",desc:"Response to network management request"}
+};
+
+const RESPONSE_CODES = [
+  {code:"00",name:"Approved",desc:"Transaction approved by the issuer.",cat:"approved",retry:false,customer:"Approved",action:"Proceed with transaction"},
+  {code:"01",name:"Refer to Card Issuer",desc:"Issuer wants voice authorization. Call the number on back of card.",cat:"referral",retry:false,customer:"Please call your bank",action:"Request voice auth or prompt customer to call issuer"},
+  {code:"02",name:"Refer to Card Issuer (Special)",desc:"Special condition — issuer wants voice authorization.",cat:"referral",retry:false,customer:"Please call your bank",action:"Request voice authorization"},
+  {code:"03",name:"Invalid Merchant",desc:"Merchant not authorized for this card or transaction type.",cat:"hard",retry:false,customer:"Transaction declined",action:"Check merchant setup and MCC code"},
+  {code:"04",name:"Pick Up Card",desc:"Issuer flagged card for pickup. Do not return to customer.",cat:"hard",retry:false,customer:"Transaction declined",action:"Retain card if safe, call issuer"},
+  {code:"05",name:"Do Not Honor",desc:"Generic decline — issuer not willing to authorize.",cat:"soft",retry:true,customer:"Declined by your bank",action:"Advise customer to contact issuer"},
+  {code:"06",name:"Error",desc:"General error condition from issuer or network.",cat:"system",retry:true,customer:"Transaction failed, please try again",action:"Retry once; if persistent check connectivity"},
+  {code:"07",name:"Pick Up Card (Special)",desc:"Card flagged — retain card, special reason from issuer.",cat:"hard",retry:false,customer:"Transaction declined",action:"Retain card if safe, call issuer"},
+  {code:"08",name:"Honour With Identification",desc:"Approve only if cardholder presents valid ID.",cat:"referral",retry:false,customer:"Please show ID",action:"Request government-issued photo ID"},
+  {code:"10",name:"Partial Approval",desc:"Only part of the requested amount was approved.",cat:"approved",retry:false,customer:"Partial amount approved",action:"Collect remainder by another payment method"},
+  {code:"11",name:"VIP Approval",desc:"Transaction approved by VIP mechanism.",cat:"approved",retry:false,customer:"Approved",action:"Proceed normally"},
+  {code:"12",name:"Invalid Transaction",desc:"Transaction type not permitted for this card/terminal.",cat:"hard",retry:false,customer:"Transaction not permitted",action:"Check processing code and terminal capabilities"},
+  {code:"13",name:"Invalid Amount",desc:"Amount is zero, exceeds limit, or improperly formatted.",cat:"hard",retry:false,customer:"Invalid amount",action:"Check DE4 formatting and amount value"},
+  {code:"14",name:"Invalid Card Number",desc:"PAN fails Luhn check or is unknown to issuer.",cat:"hard",retry:false,customer:"Invalid card number",action:"Re-enter card details; verify PAN in DE2"},
+  {code:"15",name:"No Such Issuer",desc:"Card number prefix does not map to a known issuer BIN.",cat:"hard",retry:false,customer:"Invalid card",action:"Check BIN routing table"},
+  {code:"19",name:"Re-enter Transaction",desc:"Issuer asks terminal to re-submit.",cat:"soft",retry:true,customer:"Please try again",action:"Resubmit transaction once"},
+  {code:"21",name:"No Action Taken",desc:"Issuer took no action — used in advice messages.",cat:"system",retry:false,customer:"No action",action:"Check message type; used for advice flows"},
+  {code:"25",name:"Unable to Locate Record",desc:"Issuer cannot find original transaction for reversal/inquiry.",cat:"system",retry:false,customer:"Transaction not found",action:"Verify DE37 (RRN) and original transaction details"},
+  {code:"28",name:"File Temporarily Unavailable",desc:"Issuer file system temporarily unavailable.",cat:"system",retry:true,customer:"Please try again later",action:"Retry with exponential backoff"},
+  {code:"30",name:"Format Error",desc:"Message format does not conform to ISO 8583 spec.",cat:"system",retry:false,customer:"Technical error",action:"Check field formats, lengths, and bitmap"},
+  {code:"31",name:"Bank Not Supported by Switch",desc:"Issuer BIN not supported by the network.",cat:"hard",retry:false,customer:"Card not accepted",action:"Check network routing and BIN table"},
+  {code:"33",name:"Expired Card",desc:"Card expiry date (DE14) has passed.",cat:"soft",retry:false,customer:"Your card has expired",action:"Ask customer to use a new/renewed card"},
+  {code:"34",name:"Suspected Fraud",desc:"Transaction flagged as potentially fraudulent by issuer.",cat:"hard",retry:false,customer:"Transaction declined",action:"Do not retry; customer should contact issuer"},
+  {code:"35",name:"Card Acceptor Contact Acquirer",desc:"Contact acquiring bank for instructions.",cat:"referral",retry:false,customer:"Transaction declined",action:"Contact acquirer support"},
+  {code:"36",name:"Restricted Card",desc:"Card has geographic or MCC restrictions.",cat:"hard",retry:false,customer:"Card restricted",action:"Customer should contact issuer"},
+  {code:"37",name:"Card Acceptor Call Acquirer Security",desc:"Security breach suspected. Call acquirer security.",cat:"hard",retry:false,customer:"Transaction declined",action:"Call acquirer security immediately"},
+  {code:"38",name:"PIN Tries Exceeded",desc:"Exceeded maximum allowed incorrect PIN attempts.",cat:"hard",retry:false,customer:"PIN attempts exceeded. Contact your bank",action:"Card may be blocked. Do not retry PIN"},
+  {code:"39",name:"No Credit Account",desc:"Credit account does not exist for this card.",cat:"hard",retry:false,customer:"No credit account found",action:"Verify account type in processing code (DE3)"},
+  {code:"40",name:"Requested Function Not Supported",desc:"Terminal/merchant not configured for this transaction type.",cat:"hard",retry:false,customer:"Transaction not supported",action:"Check terminal capabilities and merchant config"},
+  {code:"41",name:"Lost Card",desc:"Issuer marked card as lost. Do not return.",cat:"hard",retry:false,customer:"Transaction declined",action:"Retain card if safe; do not return to customer"},
+  {code:"43",name:"Stolen Card",desc:"Issuer flagged card as stolen.",cat:"hard",retry:false,customer:"Transaction declined",action:"Retain card if safe; contact issuer"},
+  {code:"51",name:"Insufficient Funds",desc:"Account does not have sufficient balance.",cat:"soft",retry:false,customer:"Insufficient funds",action:"Advise customer to check balance or use another card"},
+  {code:"52",name:"No Checking Account",desc:"Checking account in DE3 does not exist.",cat:"hard",retry:false,customer:"Account not found",action:"Verify account type in processing code"},
+  {code:"53",name:"No Savings Account",desc:"Savings account in DE3 does not exist.",cat:"hard",retry:false,customer:"Account not found",action:"Verify account type in processing code"},
+  {code:"54",name:"Expired Card",desc:"Card has passed expiry date.",cat:"soft",retry:false,customer:"Your card has expired",action:"Ask customer to use updated card"},
+  {code:"55",name:"Incorrect PIN",desc:"PIN entered does not match issuer records.",cat:"soft",retry:true,customer:"Incorrect PIN",action:"Allow 1–2 retries before locking"},
+  {code:"56",name:"No Card Record",desc:"Card number not on issuer file.",cat:"hard",retry:false,customer:"Card not recognized",action:"Verify PAN; check BIN routing"},
+  {code:"57",name:"Transaction Not Permitted to Cardholder",desc:"Cardholder not allowed this transaction type.",cat:"hard",retry:false,customer:"Transaction not permitted",action:"Customer should contact issuer to enable"},
+  {code:"58",name:"Transaction Not Permitted to Terminal",desc:"Terminal not authorized for this transaction type.",cat:"hard",retry:false,customer:"Transaction declined",action:"Check terminal permissions with acquirer"},
+  {code:"59",name:"Suspected Fraud",desc:"Fraud suspected by issuer systems.",cat:"hard",retry:false,customer:"Transaction declined",action:"Do not retry; advise customer to contact bank"},
+  {code:"61",name:"Withdrawal Amount Limit Exceeded",desc:"Exceeds daily/per-transaction withdrawal limit.",cat:"soft",retry:false,customer:"Amount exceeds your limit",action:"Customer may split or contact bank to raise limit"},
+  {code:"62",name:"Restricted Card",desc:"Card restricted geographically or by MCC.",cat:"hard",retry:false,customer:"Card restricted",action:"Customer should contact issuer"},
+  {code:"63",name:"Security Violation",desc:"Security or encryption violation in the message.",cat:"hard",retry:false,customer:"Transaction declined",action:"Check PIN block, MAC, and encryption keys"},
+  {code:"65",name:"Exceeds Withdrawal Frequency Limit",desc:"Too many transactions in the allowed period.",cat:"soft",retry:false,customer:"Transaction frequency limit reached",action:"Customer should wait or contact issuer"},
+  {code:"68",name:"Response Received Too Late",desc:"Issuer response arrived after timeout.",cat:"system",retry:true,customer:"Timeout. Please try again.",action:"Retry; investigate network latency"},
+  {code:"75",name:"PIN Entry Tries Exceeded",desc:"Too many wrong PIN attempts.",cat:"hard",retry:false,customer:"PIN locked. Contact your bank",action:"Do not retry; card may be blocked"},
+  {code:"76",name:"Wrong PIN, Tries Exceeded",desc:"Max PIN attempts exceeded.",cat:"hard",retry:false,customer:"Contact your bank",action:"Customer must contact issuer to unblock"},
+  {code:"77",name:"Intervene Bank Approval Required",desc:"Transaction requires manual bank approval.",cat:"referral",retry:false,customer:"Call your bank",action:"Obtain voice authorization"},
+  {code:"78",name:"Blocked — First Use",desc:"Card never used; issuer requires activation.",cat:"soft",retry:false,customer:"Please activate your card",action:"Advise customer to activate through bank channel"},
+  {code:"82",name:"CVV Validation Failure",desc:"Card verification value (CVV2/CVC2) mismatch.",cat:"hard",retry:false,customer:"Invalid card security code",action:"Re-enter CVV; if persists, contact issuer"},
+  {code:"85",name:"No Reason to Decline",desc:"Issuer has no reason to decline — effectively approved.",cat:"approved",retry:false,customer:"Approved",action:"Treat as approval"},
+  {code:"91",name:"Issuer or Switch Inoperative",desc:"Issuer system down or unavailable.",cat:"system",retry:true,customer:"Bank temporarily unavailable, try again",action:"Retry with exponential backoff; check issuer status"},
+  {code:"92",name:"Financial Institution Not Found",desc:"Unable to route to destination institution.",cat:"system",retry:false,customer:"Bank not found",action:"Check BIN routing table and network config"},
+  {code:"94",name:"Duplicate Transmission",desc:"STAN or RRN already processed. Duplicate detected.",cat:"system",retry:false,customer:"Duplicate transaction",action:"Check DE11 (STAN) uniqueness; idempotency issue"},
+  {code:"96",name:"System Malfunction",desc:"System error at issuer or network.",cat:"system",retry:true,customer:"Technical issue, please try again",action:"Retry; escalate if persists"},
+  {code:"N7",name:"CVV2 Failure",desc:"Card Security Code (CVV2) mismatch.",cat:"hard",retry:false,customer:"Invalid security code",action:"Customer should check CVV; re-enter"},
+  {code:"R0",name:"Revocation of Authorization Order",desc:"Recurring payment authorization revoked by cardholder.",cat:"hard",retry:false,customer:"Authorization revoked",action:"Stop recurring billing; contact cardholder"},
+  {code:"R1",name:"Revocation of All Authorizations",desc:"Cardholder revoked all authorizations with this merchant.",cat:"hard",retry:false,customer:"All authorizations revoked",action:"Stop all charges; update subscription status"}
+];
+
+// ===================== ENCODING HELPERS =====================
+// Pad/truncate a value to fixed field spec
+function encodeFixed(val, spec) {
+  const s = String(val);
+  if (spec.fmt === 'N') {
+    // Numeric: zero-pad LEFT, truncate RIGHT if too long
+    return s.padStart(spec.len, '0').slice(-spec.len);
+  } else {
+    // AN / ANS / A: space-pad RIGHT, truncate RIGHT
+    return s.padEnd(spec.len, ' ').substring(0, spec.len);
+  }
+}
+
+// Decode / trim a parsed fixed field value for display (remove padding)
+function trimFixed(val, spec) {
+  if (!val) return val;
+  if (spec.fmt === 'N') return val; // keep zeros for numeric
+  return val.trimEnd(); // trim trailing spaces for AN/ANS/A
+}
+
+// ===================== PARSER CORE =====================
+function hexToBits(hex) {
+  let bits = [];
+  for (let i = 0; i < hex.length; i += 2) {
+    let b = parseInt(hex.substr(i, 2), 16);
+    for (let j = 7; j >= 0; j--) bits.push((b >> j) & 1);
+  }
+  return bits;
+}
+
+function parseMTI(hex) {
+  const mti = hex.substring(0, 4);
+  const v = ['ISO 8583:1987', 'ISO 8583:1993', 'ISO 8583:2003'][parseInt(mti[0])] || 'Unknown';
+  const cls = {1:'Authorization',2:'Financial',3:'File Actions',4:'Reversal',5:'Reconciliation',6:'Administrative',7:'Fee Collection',8:'Network Management',9:'Reserved'}[parseInt(mti[1])] || 'Unknown';
+  const fn = {0:'Request',1:'Response',2:'Advice',3:'Advice Response',4:'Notification'}[parseInt(mti[2])] || 'Unknown';
+  const orig = {0:'Acquirer',1:'Acquirer Repeat',2:'Issuer',3:'Issuer Repeat',4:'Other'}[parseInt(mti[3])] || 'Unknown';
+  return {mti, v, cls, fn, orig};
+}
+
+function parseMessage(raw) {
+  raw = raw.replace(/\s+/g, '').toUpperCase();
+  if (raw.length < 20) throw new Error('Message too short');
+  const mtiInfo = parseMTI(raw);
+  let pos = 4;
+  const bitmapHex = raw.substring(pos, pos + 16);
+  pos += 16;
+  let bits = hexToBits(bitmapHex);
+  let allBits = [...bits];
+  if (bits[0] === 1 && raw.length > pos + 16) {
+    const bm2 = raw.substring(pos, pos + 16);
+    pos += 16;
+    allBits = [...bits, ...hexToBits(bm2)];
+  }
+  let des = [];
+  for (let i = 1; i < allBits.length; i++) {
+    if (allBits[i] !== 1) continue;
+    const de = i + 1;
+    if (de === 1 || de === 65) continue;
+    const spec = DE_SPEC[de];
+    let rawVal = '', len = 0;
+    if (!spec) {
+      des.push({de, name:'Unknown/Proprietary', rawVal:'[present — no spec]', displayVal:'[present]', fmt:'?', cat:'other', desc:'No spec defined'});
+      continue;
+    }
+    try {
+      if (spec.fmt === 'LLVAR') {
+        len = parseInt(raw.substring(pos, pos + 2)); pos += 2;
+        rawVal = raw.substring(pos, pos + len); pos += len;
+      } else if (spec.fmt === 'LLLVAR') {
+        len = parseInt(raw.substring(pos, pos + 3)); pos += 3;
+        rawVal = raw.substring(pos, pos + len); pos += len;
+      } else if (spec.fmt === 'B') {
+        len = spec.len * 2; // bytes → hex chars
+        rawVal = raw.substring(pos, pos + len); pos += len;
+      } else {
+        // Fixed: N, AN, ANS, A
+        rawVal = raw.substring(pos, pos + spec.len); pos += spec.len;
+      }
+    } catch(e) { break; }
+    const displayVal = trimFixed(rawVal, spec);
+    des.push({de, name:spec.name, rawVal, displayVal, fmt:spec.fmt, cat:spec.cat, desc:spec.desc});
+  }
+  return {mtiInfo, bitmapHex, allBits, des};
+}
+
+// ===================== SAMPLE MESSAGES =====================
+// Build samples programmatically using the same encoder so they're always valid
+function buildHex(mti, fields) {
+  let bitmap = new Array(128).fill(0);
+  let ordered = Object.keys(fields).map(k => parseInt(k)).sort((a, b) => a - b);
+  let hasSecondary = ordered.some(d => d > 64);
+  if (hasSecondary) bitmap[0] = 1;
+  ordered.forEach(de => { bitmap[de - 1] = 1; });
+  function bitsToHex(b64) {
+    let h = '';
+    for (let i = 0; i < 64; i += 8) {
+      let byte = 0;
+      for (let j = 0; j < 8; j++) byte = (byte << 1) | (b64[i + j] || 0);
+      h += byte.toString(16).padStart(2, '0').toUpperCase();
+    }
+    return h;
+  }
+  let bm1 = bitsToHex(bitmap.slice(0, 64));
+  let bm2 = hasSecondary ? bitsToHex(bitmap.slice(64, 128)) : '';
+  let body = '';
+  ordered.forEach(de => {
+    const spec = DE_SPEC[de];
+    const val = String(fields[de]);
+    if (!spec) { body += val; return; }
+    if (spec.fmt === 'LLVAR') body += val.length.toString().padStart(2, '0') + val;
+    else if (spec.fmt === 'LLLVAR') body += val.length.toString().padStart(3, '0') + val;
+    else if (spec.fmt === 'B') body += val.padEnd(spec.len * 2, '0').substring(0, spec.len * 2);
+    else body += encodeFixed(val, spec);
+  });
+  return mti + bm1 + bm2 + body;
+}
+
+const SAMPLES = {
+  auth: buildHex('0200', {
+    2:'4111111111111111', 3:'000000', 4:'000000004250',
+    7:'0315143022', 11:'000001', 12:'143022', 13:'0315',
+    14:'2612', 18:'5411', 22:'051', 25:'00',
+    37:'123456789012', 41:'TERM0001', 42:'MERCHANT000001 ', 49:'840'
+  }),
+  authresp: buildHex('0210', {
+    2:'4111111111111111', 3:'000000', 4:'000000004250',
+    7:'0315143025', 11:'000001',
+    37:'123456789012', 38:'AUTH01', 39:'00', 41:'TERM0001', 49:'840'
+  }),
+  reversal: buildHex('0400', {
+    2:'4111111111111111', 3:'000000', 4:'000000004250',
+    7:'0315143500', 11:'000002', 37:'123456789013',
+    41:'TERM0001', 49:'840',
+    90:'020000000100010315123456789012' + '0'.repeat(12)
+  })
+};
+
+function loadSample(type) {
+  document.getElementById('hexInput').value = SAMPLES[type];
+  decodeMessage();
+}
+function clearDecoder() {
+  document.getElementById('hexInput').value = '';
+  document.getElementById('decodeResult').innerHTML = '';
+}
+
+function decodeMessage() {
+  let raw = document.getElementById('hexInput').value.replace(/\s+/g, '').toUpperCase();
+  if (raw.length < 20) {
+    document.getElementById('decodeResult').innerHTML = '<div class="alert alert-error">⚠️ Message too short. Please paste a valid ISO 8583 hex-encoded message.</div>';
+    return;
+  }
+  try {
+    const {mtiInfo, bitmapHex, allBits, des} = parseMessage(raw);
+    renderDecodeResult(mtiInfo, bitmapHex, allBits, des);
+  } catch(e) {
+    document.getElementById('decodeResult').innerHTML = `<div class="alert alert-error">❌ Parse error: ${e.message}. Check the hex string format.</div>`;
+  }
+}
+
+function renderDecodeResult(mti, bitmapHex, bits, des) {
+  const mtiMeta = MTI_DB[mti.mti];
+  let html = `
+  <div class="card" style="margin-bottom:16px">
+    <div class="result-title">🔢 Message Type Indicator (MTI)</div>
+    <div class="mti-box">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="font-size:36px;font-family:'Courier New',monospace;font-weight:900;color:var(--accent)">${mti.mti}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">${mtiMeta ? mtiMeta.name : mti.cls + ' ' + mti.fn}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">${mtiMeta ? mtiMeta.desc : ''}</div>
+          ${mtiMeta ? `<div style="font-size:11px;color:var(--text3);margin-top:4px">📍 ${mtiMeta.origin}</div>` : ''}
+        </div>
+      </div>
+      <div class="mti-grid">
+        <div class="mti-cell"><div class="val">${mti.mti[0]}</div><div class="lbl">Version</div><div class="desc">${mti.v}</div></div>
+        <div class="mti-cell"><div class="val">${mti.mti[1]}</div><div class="lbl">Class</div><div class="desc">${mti.cls}</div></div>
+        <div class="mti-cell"><div class="val">${mti.mti[2]}</div><div class="lbl">Function</div><div class="desc">${mti.fn}</div></div>
+        <div class="mti-cell"><div class="val">${mti.mti[3]}</div><div class="lbl">Origin</div><div class="desc">${mti.orig}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="result-title">🗺️ Bitmap (${bits.length} bits — ${bits.length === 128 ? 'Primary + Secondary' : 'Primary only'})</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'Courier New',monospace">${bitmapHex}</div>
+    <div class="bitmap-grid">`;
+  for (let i = 0; i < Math.min(bits.length, 128); i++) {
+    const deNum = i + 1;
+    const spec = DE_SPEC[deNum];
+    const name = spec ? spec.name : 'DE' + deNum;
+    html += `<div class="bit-cell ${bits[i] ? 'on' : 'off'} tooltip" data-tip="DE${deNum}: ${name}">${deNum}</div>`;
+  }
+  const presentCount = bits.filter(b => b === 1).length;
+  html += `</div>
+    <div style="display:flex;gap:12px;font-size:11px;margin-top:8px">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:2px;display:inline-block"></span> Present (${presentCount} fields)</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:var(--surface3);border-radius:2px;display:inline-block"></span> Absent</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="result-title">📋 Data Elements (${des.length} fields decoded)</div>
+    <div style="overflow-x:auto">
+    <table class="de-table">
+      <thead><tr><th>DE</th><th>Field Name</th><th>Format</th><th>Value</th><th>Description</th></tr></thead>
+      <tbody>`;
+  des.forEach(d => {
+    const color = CAT_COLORS[d.cat] || '#64748b';
+    let displayVal = d.displayVal || d.rawVal;
+    let extra = '';
+    // Mask PAN
+    if (d.de === 2 && displayVal.length > 6) {
+      displayVal = displayVal.substring(0, 6) + '*'.repeat(Math.max(0, displayVal.length - 10)) + displayVal.slice(-4);
+    }
+    // Annotate DE39 response code
+    if (d.de === 39) {
+      const rc = RESPONSE_CODES.find(r => r.code === displayVal.trim());
+      if (rc) {
+        const tagClass = rc.cat === 'approved' ? 'tag-green' : rc.cat === 'hard' ? 'tag-red' : rc.cat === 'soft' ? 'tag-yellow' : rc.cat === 'referral' ? 'tag-blue' : 'tag-gray';
+        extra = ` <span class="tag ${tagClass}">${rc.name}</span>`;
+      }
+    }
+    // Annotate currency codes
+    if ([49, 50, 51].includes(d.de) && CURRENCIES[displayVal.trim()]) {
+      extra = ` <span class="tag tag-blue">${CURRENCIES[displayVal.trim()]}</span>`;
+    }
+    // DE3 processing code annotation
+    if (d.de === 3 && displayVal.length >= 2) {
+      const txnCodes = {'00':'Purchase','01':'Cash Withdrawal','09':'Purchase+Cashback','20':'Refund/Return','28':'Payment','31':'Balance Inquiry','40':'Transfer','90':'Mini-Statement'};
+      const code2 = displayVal.substring(0, 2);
+      if (txnCodes[code2]) extra = ` <span class="tag tag-purple">${txnCodes[code2]}</span>`;
+    }
+    html += `<tr>
+      <td><span class="de-num">DE${d.de}</span></td>
+      <td><span style="display:inline-flex;align-items:center;gap:6px"><span class="de-cat" style="background:${color}"></span>${d.name}</span></td>
+      <td><span class="tag tag-gray">${d.fmt}</span></td>
+      <td><span class="de-val">${displayVal}</span>${extra}</td>
+      <td class="tooltip" style="max-width:300px;color:var(--text3);font-size:12px" data-tip="${d.desc}">${d.desc}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+  document.getElementById('decodeResult').innerHTML = html;
+}
+
+// ===================== BUILDER =====================
+const BUILDER_MTIS = [
+  {mti:'0100',name:'Auth Request',desc:'Pre-auth check'},
+  {mti:'0200',name:'Financial Request',desc:'Purchase / withdrawal'},
+  {mti:'0210',name:'Financial Response',desc:'Issuer response'},
+  {mti:'0400',name:'Reversal Request',desc:'Cancel transaction'},
+  {mti:'0800',name:'Network Mgmt',desc:'Sign-on / admin'},
+  {mti:'0420',name:'Reversal Advice',desc:'Advise of reversal'}
+];
+
+const BUILDER_FIELDS = {
+  '0200':[
+    {de:2,required:true},{de:3,required:true},{de:4,required:true},{de:7,required:true},
+    {de:11,required:true},{de:12,required:false},{de:13,required:false},{de:14,required:false},
+    {de:18,required:false},{de:22,required:false},{de:37,required:false},{de:41,required:true},
+    {de:42,required:false},{de:43,required:false},{de:49,required:true},{de:55,required:false}
+  ],
+  '0100':[
+    {de:2,required:true},{de:3,required:true},{de:4,required:true},{de:7,required:true},
+    {de:11,required:true},{de:14,required:true},{de:22,required:false},{de:37,required:false},
+    {de:41,required:true},{de:42,required:false},{de:49,required:true}
+  ],
+  '0210':[
+    {de:2,required:false},{de:3,required:true},{de:4,required:true},{de:7,required:true},
+    {de:11,required:true},{de:37,required:true},{de:38,required:false},{de:39,required:true},
+    {de:41,required:true},{de:54,required:false}
+  ],
+  '0400':[
+    {de:2,required:true},{de:3,required:true},{de:4,required:true},{de:7,required:true},
+    {de:11,required:true},{de:37,required:true},{de:41,required:true},{de:42,required:false},
+    {de:49,required:true},{de:90,required:true}
+  ],
+  '0800':[{de:7,required:true},{de:11,required:true},{de:70,required:true}],
+  '0420':[
+    {de:2,required:true},{de:3,required:true},{de:4,required:true},{de:7,required:true},
+    {de:11,required:true},{de:37,required:true},{de:41,required:true},{de:90,required:true}
+  ]
+};
+
+let selectedMTI = null;
+
+function initBuilder() {
+  const grid = document.getElementById('mtiSelectGrid');
+  grid.innerHTML = BUILDER_MTIS.map(m => `
+    <div class="mti-card" onclick="selectMTI('${m.mti}',this)">
+      <div class="mti-code">${m.mti}</div>
+      <div class="mti-name">${m.name}</div>
+      <div class="mti-desc">${m.desc}</div>
+    </div>
+  `).join('');
+}
+
+function selectMTI(mti, el) {
+  document.querySelectorAll('.mti-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMTI = mti;
+  const fields = BUILDER_FIELDS[mti] || [];
+  document.getElementById('deFieldsSection').style.display = 'block';
+  document.getElementById('deFieldRows').innerHTML = fields.map(f => {
+    const spec = DE_SPEC[f.de];
+    if (!spec) return '';
+    const placeholder = spec.fmt === 'N' ? '0'.repeat(Math.min(spec.len, 6)) : spec.fmt === 'B' ? 'hex...' : 'value';
+    const maxLen = spec.fmt.includes('VAR') ? 999 : (spec.fmt === 'B' ? spec.len * 2 : spec.len);
+    return `<div class="de-builder-row">
+      <div>
+        <div class="de-num">DE${f.de}</div>
+        ${f.required ? '<span class="tag tag-red" style="font-size:9px;padding:1px 5px">REQ</span>' : '<span class="tag tag-gray" style="font-size:9px;padding:1px 5px">OPT</span>'}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px">${spec.name}</div>
+        <div class="de-info">${spec.desc} | Format: ${spec.fmt} | Max: ${spec.len}</div>
+      </div>
+      <input type="text" id="de_${f.de}" placeholder="${placeholder}" maxlength="${maxLen}" class="text-mono"/>
+      <div class="tooltip" data-tip="${spec.desc}" style="color:var(--text3);font-size:16px;cursor:help">ℹ️</div>
+    </div>`;
+  }).join('');
+  document.getElementById('builderOutput').innerHTML = '';
+}
+
+function buildMessage() {
+  if (!selectedMTI) return;
+  const fields = BUILDER_FIELDS[selectedMTI] || [];
+  let presentDEs = {};
+  fields.forEach(f => {
+    const el = document.getElementById('de_' + f.de);
+    if (el && el.value.trim()) presentDEs[f.de] = el.value.trim();
+  });
+  if (Object.keys(presentDEs).length === 0) {
+    document.getElementById('builderOutput').innerHTML = '<div class="alert alert-error" style="margin-top:16px">⚠️ Please fill in at least one field.</div>';
+    return;
+  }
+  const msgHex = buildHex(selectedMTI, presentDEs);
+  const mtiMeta = MTI_DB[selectedMTI];
+  const activeDEs = Object.entries(presentDEs).map(([d, v]) => `DE${d}: ${v}`).join('\n');
+  document.getElementById('builderOutput').innerHTML = `
+    <div class="output-box" style="margin-top:16px">
+      <div class="alert alert-success" style="margin-bottom:12px">✅ Message built — ${Object.keys(presentDEs).length} fields, ${msgHex.length / 2} bytes</div>
+      <div style="margin-bottom:12px">
+        <div class="output-label">Summary</div>
+        <div style="font-size:13px;color:var(--text2)">
+          <strong>MTI:</strong> ${selectedMTI} — ${mtiMeta ? mtiMeta.name : ''}<br>
+          <strong>Fields:</strong> ${Object.keys(presentDEs).map(d => 'DE' + d).join(', ')}
+        </div>
+      </div>
+      <div class="output-label">Generated ISO 8583 Hex <button class="btn btn-secondary btn-sm copy-btn" onclick="copyText('${msgHex}')">📋 Copy</button></div>
+      <pre>${msgHex}</pre>
+      <div class="output-label" style="margin-top:14px">Field Values</div>
+      <pre style="color:var(--text2)">${activeDEs}</pre>
+    </div>
+    <div class="alert alert-info" style="margin-top:12px">💡 Paste the hex above into the Parser/Decoder tab to verify round-trip decoding.</div>`;
+}
+
+function clearBuilder() {
+  document.querySelectorAll('.mti-card').forEach(c => c.classList.remove('selected'));
+  selectedMTI = null;
+  document.getElementById('deFieldsSection').style.display = 'none';
+  document.getElementById('builderOutput').innerHTML = '';
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    document.querySelectorAll('.copy-btn').forEach(b => { b.textContent = '✅ Copied!'; setTimeout(() => b.textContent = '📋 Copy', 2000); });
+  });
+}
+
+// ===================== RESPONSE CODES =====================
+let rcCatFilter = 'all';
+function initRC() { renderRC(RESPONSE_CODES); }
+
+function renderRC(codes) {
+  const catColors = {approved:'tag-green',soft:'tag-yellow',hard:'tag-red',system:'tag-gray',referral:'tag-blue'};
+  const catLabels = {approved:'✅ Approved',soft:'🟡 Soft Decline',hard:'🔴 Hard Decline',system:'⚙️ System',referral:'📞 Referral'};
+  document.getElementById('rcStats').textContent = `Showing ${codes.length} of ${RESPONSE_CODES.length} response codes`;
+  document.getElementById('rcGrid').innerHTML = codes.map(rc => `
+    <div class="rc-card">
+      <div class="rc-code" style="color:${rc.cat==='approved'?'var(--success)':rc.cat==='hard'?'var(--danger)':rc.cat==='soft'?'var(--warning)':rc.cat==='referral'?'var(--accent)':'var(--text2)'}">${rc.code}</div>
+      <div class="rc-name">${rc.name}</div>
+      <div class="rc-desc">${rc.desc}</div>
+      <div class="rc-footer">
+        <span class="tag ${catColors[rc.cat]||'tag-gray'}">${catLabels[rc.cat]||rc.cat}</span>
+        ${rc.retry ? '<span class="tag tag-blue">🔄 Retry OK</span>' : '<span class="tag tag-gray">🚫 No Retry</span>'}
+      </div>
+      <div class="retry-info">
+        <strong>Customer message:</strong> ${rc.customer}<br>
+        <strong>Dev action:</strong> ${rc.action}
+      </div>
+    </div>`).join('');
+}
+
+function filterRC() {
+  const q = document.getElementById('rcSearch').value.toLowerCase();
+  let filtered = RESPONSE_CODES;
+  if (rcCatFilter !== 'all') filtered = filtered.filter(r => r.cat === rcCatFilter);
+  if (q) filtered = filtered.filter(r =>
+    r.code.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) ||
+    r.desc.toLowerCase().includes(q) || r.action.toLowerCase().includes(q));
+  renderRC(filtered);
+}
+
+function setCatFilter(el, cat) {
+  rcCatFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  filterRC();
+}
+
+// ===================== LEARN =====================
+const LEARN_MODULES = [
+  {id:"what",icon:"💳",title:"What is a Card Payment?",level:"Beginner",desc:"Understand how money moves from your card tap to the merchant's bank account."},
+  {id:"iso8583intro",icon:"📨",title:"ISO 8583 Explained",level:"Beginner",desc:"What the standard is, why it exists, and how it fits into the payment ecosystem."},
+  {id:"mti",icon:"🔢",title:"MTI — Message Type Indicator",level:"Beginner",desc:"Learn to read and decode the 4-digit MTI that defines what every message means."},
+  {id:"bitmap",icon:"🗺️",title:"Bitmaps Demystified",level:"Intermediate",desc:"How the 64-bit (or 128-bit) bitmap tells you exactly which fields are present."},
+  {id:"defields",icon:"📋",title:"Data Elements Deep Dive",level:"Intermediate",desc:"Key fields every payment professional should know — PAN, STAN, RRN, DE39 and more."},
+  {id:"flows",icon:"🔄",title:"Transaction Flows",level:"Intermediate",desc:"Step-by-step walkthroughs of purchase, reversal, and network management flows."},
+  {id:"emv",icon:"💡",title:"EMV & DE55",level:"Advanced",desc:"How chip card data is carried in ISO 8583 messages and why DE55 matters."},
+  {id:"testing",icon:"🧪",title:"Testing & Certification",level:"Advanced",desc:"How payment testing works, common pitfalls, and how to use this tool effectively."}
+];
+
+const LESSON_CONTENT = {
+  what:{title:"What is a Card Payment?",subtitle:"Understanding the ecosystem before the protocol",content:`
+<h3>The 4 Parties in Every Card Transaction</h3>
+<p>When you tap your card, four main players are involved:</p>
+<div class="flow-diagram">
+  <div class="flow-node" style="background:#1e3a5f;color:#93c5fd">🧑 Cardholder<br><span style="font-size:10px;color:#64748b">You</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#1a2e1a;color:#86efac">🏪 Merchant<br><span style="font-size:10px;color:#64748b">Shop</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#2e2010;color:#fcd99d">🏦 Acquirer<br><span style="font-size:10px;color:#64748b">Merchant's Bank</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#2e1a2e;color:#d8b4fe">🌐 Network<br><span style="font-size:10px;color:#64748b">Visa/MC</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#2e1a1a;color:#fca5a5">🏦 Issuer<br><span style="font-size:10px;color:#64748b">Your Bank</span></div>
+</div>
+<ul>
+  <li><strong>Cardholder</strong> — the person paying with a card issued by their bank.</li>
+  <li><strong>Merchant</strong> — the business accepting payment via terminal or gateway.</li>
+  <li><strong>Acquirer</strong> — the merchant's bank. Routes the transaction toward the card network.</li>
+  <li><strong>Card Network</strong> — Visa, Mastercard, RuPay, UnionPay. Acts as the messaging highway.</li>
+  <li><strong>Issuer</strong> — the cardholder's bank. Approves or declines the transaction.</li>
+</ul>
+<h3>What happens in milliseconds?</h3>
+<ul>
+  <li>Card data is read (chip, NFC, or magstripe)</li>
+  <li>Terminal sends an authorization request to the acquirer</li>
+  <li>Acquirer formats as ISO 8583 and routes to the network</li>
+  <li>Network routes to the correct issuer based on the BIN (first 6–8 digits of the card)</li>
+  <li>Issuer checks balance, fraud rules, and account status — then responds</li>
+  <li>Response travels back through the same chain</li>
+  <li>Terminal shows Approved ✅ or Declined ❌ — typically in under 2 seconds</li>
+</ul>
+<div class="info-box">💡 <strong>Key insight:</strong> ISO 8583 is the language spoken between the Acquirer, Network, and Issuer. It defines the exact byte-level structure of every message in this chain.</div>
+<h3>Authorization vs. Settlement</h3>
+<p>Authorization (0100/0200 messages) checks if funds are available and reserves them. Settlement (batch processing, typically end-of-day) is when money actually moves. These are two separate flows!</p>`},
+  iso8583intro:{title:"ISO 8583 Explained",subtitle:"The universal language of card payments",content:`
+<h3>Why ISO 8583 exists</h3>
+<p>Before ISO 8583, every bank had its own proprietary message format. Integrations were expensive and complex. ISO 8583 (first published 1987, updated 1993 and 2003) created a common language for card-originated transactions.</p>
+<div class="info-box">💡 ISO 8583 is to payments what HTTP is to the web — an agreed-upon format that lets different systems communicate.</div>
+<h3>Anatomy of an ISO 8583 Message</h3>
+<div class="flow-diagram">
+  <div class="flow-node" style="background:#1e3a5f;color:#93c5fd">MTI<br><span style="font-size:10px">4 ASCII chars</span></div>
+  <div class="flow-arrow">+</div>
+  <div class="flow-node" style="background:#1a2e1a;color:#86efac">Bitmap<br><span style="font-size:10px">16 or 32 hex chars</span></div>
+  <div class="flow-arrow">+</div>
+  <div class="flow-node" style="background:#2e2010;color:#fcd99d">Data Elements<br><span style="font-size:10px">DE1 to DE128</span></div>
+</div>
+<h3>Key characteristics</h3>
+<ul>
+  <li><strong>Compact binary/hex by design</strong> — no field names in the wire format; parsers use the spec to know what each byte means.</li>
+  <li><strong>Flexible</strong> — the bitmap tells the receiver exactly which fields are present.</li>
+  <li><strong>Not truly standard</strong> — Visa, Mastercard, RuPay, and individual banks have their own "flavors." This is the biggest real-world challenge.</li>
+</ul>
+<div class="warn-box">⚠️ When someone says "we use ISO 8583", always ask: which version and which implementation spec? Two ISO 8583 implementations can be incompatible.</div>
+<h3>Versions</h3>
+<ul>
+  <li><strong>ISO 8583:1987</strong> — Original, still used in many legacy systems</li>
+  <li><strong>ISO 8583:1993</strong> — Security enhancements, new fields</li>
+  <li><strong>ISO 8583:2003</strong> — Current version, EMV/chip support added</li>
+</ul>`},
+  mti:{title:"MTI — Message Type Indicator",subtitle:"The 4-digit code that defines everything",content:`
+<h3>Structure of an MTI</h3>
+<p>The MTI is always exactly 4 digits. Each digit has a specific meaning:</p>
+<div class="grid3" style="margin:16px 0">
+  <div class="mti-cell"><div class="val">0</div><div class="lbl">Version</div><div class="desc">ISO 8583:1993/2003</div></div>
+  <div class="mti-cell"><div class="val">2</div><div class="lbl">Class</div><div class="desc">Financial Message</div></div>
+  <div class="mti-cell"><div class="val">0</div><div class="lbl">Function</div><div class="desc">Request</div></div>
+  <div class="mti-cell"><div class="val">0</div><div class="lbl">Origin</div><div class="desc">Acquirer</div></div>
+</div>
+<h3>Digit 1 — Version</h3>
+<ul><li><strong>0</strong> = ISO 8583:1987 &nbsp;|&nbsp; <strong>1</strong> = ISO 8583:1993 &nbsp;|&nbsp; <strong>2</strong> = ISO 8583:2003</li></ul>
+<h3>Digit 2 — Message Class</h3>
+<ul>
+  <li><strong>1</strong> = Authorization &nbsp;|&nbsp; <strong>2</strong> = Financial &nbsp;|&nbsp; <strong>4</strong> = Reversal</li>
+  <li><strong>5</strong> = Reconciliation &nbsp;|&nbsp; <strong>6</strong> = Administrative &nbsp;|&nbsp; <strong>8</strong> = Network Management</li>
+</ul>
+<h3>Digit 3 — Function</h3>
+<ul>
+  <li><strong>0</strong> = Request &nbsp;|&nbsp; <strong>1</strong> = Response &nbsp;|&nbsp; <strong>2</strong> = Advice &nbsp;|&nbsp; <strong>3</strong> = Advice Response</li>
+</ul>
+<h3>Digit 4 — Origin</h3>
+<ul><li><strong>0</strong> = Acquirer &nbsp;|&nbsp; <strong>1</strong> = Acquirer Repeat &nbsp;|&nbsp; <strong>2</strong> = Issuer &nbsp;|&nbsp; <strong>3</strong> = Issuer Repeat</li></ul>
+<div class="info-box">📖 <strong>Quick test:</strong> MTI 0410 = Version 0 (1987), Class 4 (Reversal), Function 1 (Response), Origin 0 (Acquirer) → <strong>Reversal Response from Acquirer</strong></div>
+<div class="code-block">0100 → Authorization Request
+0110 → Authorization Response
+0200 → Financial Request (Purchase)
+0210 → Financial Response
+0400 → Reversal Request
+0410 → Reversal Response
+0800 → Network Management Request (Sign-On)
+0810 → Network Management Response</div>`},
+  bitmap:{title:"Bitmaps Demystified",subtitle:"How ISO 8583 tells you which fields are present",content:`
+<h3>What is a bitmap?</h3>
+<p>The bitmap is an 8-byte (64-bit) field. Each bit position corresponds to one Data Element. If bit N = 1, DE N is present. If bit N = 0, it's absent.</p>
+<div class="code-block">Bitmap hex:  72 38 00 00 00 A0 00 04
+Binary:      01110010 00111000 00000000 00000000
+             00000000 10100000 00000000 00000100
+Present DEs: 2, 3, 4, 7, 11, 12, 41, 43, 62</div>
+<h3>Primary vs Secondary Bitmap</h3>
+<p><strong>Bit 1 of the primary bitmap</strong> is special: if set to 1, it means a secondary bitmap follows (covers DEs 65–128).</p>
+<div class="warn-box">⚠️ <strong>Common mistake:</strong> Bit 1 being set does NOT mean DE1 is present. It means a secondary bitmap is included. This trips up many developers!</div>
+<h3>Step-by-step reading</h3>
+<ul>
+  <li>Take the first 16 hex chars (8 bytes) — primary bitmap</li>
+  <li>Convert each byte to 8 binary bits</li>
+  <li>Bit 1 = 1 → read the next 16 hex chars as secondary bitmap</li>
+  <li>For each bit i that is 1, DE i is present in the message body</li>
+</ul>
+<div class="info-box">💡 Use the Parser/Decoder tab to visualize bitmaps interactively — paste any hex message and see the 128-bit grid light up!</div>`},
+  defields:{title:"Data Elements Deep Dive",subtitle:"The fields every payment professional must know",content:`
+<h3>Field Format Types</h3>
+<ul>
+  <li><strong>N</strong> = Numeric fixed (zero-padded left)</li>
+  <li><strong>AN / ANS</strong> = Alphanumeric fixed (space-padded right)</li>
+  <li><strong>B</strong> = Binary (encoded as hex in ASCII mode)</li>
+  <li><strong>LLVAR</strong> = Variable length, 2-digit length prefix</li>
+  <li><strong>LLLVAR</strong> = Variable length, 3-digit length prefix</li>
+</ul>
+<div class="code-block">LLVAR example — DE2 (PAN), value = 4111111111111111 (16 digits):
+Encoded: 16 4111111111111111
+         ↑  ↑ actual value
+      length prefix</div>
+<h3>The Most Important Data Elements</h3>
+<ul>
+  <li><strong>DE2 — PAN:</strong> Card number (LLVAR, up to 19 digits). Always mask in logs — last 4 only!</li>
+  <li><strong>DE3 — Processing Code:</strong> 6-digit code. First 2 = txn type (00=purchase, 01=cash, 20=refund, 40=transfer), next 2 = from account, last 2 = to account.</li>
+  <li><strong>DE4 — Amount:</strong> 12-digit numeric, smallest currency unit. $42.50 = 000000004250</li>
+  <li><strong>DE11 — STAN:</strong> 6-digit unique trace number per transaction. Used to match request and response.</li>
+  <li><strong>DE37 — RRN:</strong> 12-char Retrieval Reference Number from acquirer. Used in disputes and reversals.</li>
+  <li><strong>DE38 — Auth Code:</strong> 6-char approval code from issuer. Printed on receipts.</li>
+  <li><strong>DE39 — Response Code:</strong> 2-char result. 00=Approved. See Response Codes tab.</li>
+  <li><strong>DE41 — Terminal ID:</strong> 8-char terminal identifier. Critical for chargeback investigations.</li>
+  <li><strong>DE49 — Currency Code:</strong> ISO 4217 numeric. 840=USD, 356=INR, 978=EUR, 826=GBP</li>
+  <li><strong>DE55 — EMV/ICC Data:</strong> TLV-encoded chip card data (cryptogram, ATC, TVR, etc.)</li>
+</ul>
+<div class="warn-box">⚠️ <strong>PCI DSS:</strong> Never log DE2 (full PAN), DE35 (Track 2), DE36 (Track 3), DE52 (PIN), or DE55 in plaintext. These are sensitive cardholder data.</div>
+<h3>DE3 Processing Code Quick Reference</h3>
+<div class="code-block">000000 = Purchase (from default account)
+010000 = Cash Withdrawal (ATM)
+200000 = Refund / Return
+400000 = Account Transfer
+310000 = Balance Inquiry
+090000 = Purchase with Cashback</div>`},
+  flows:{title:"Transaction Flows",subtitle:"How messages travel in real scenarios",content:`
+<h3>Flow 1: Standard Purchase</h3>
+<div class="flow-diagram" style="flex-direction:column;align-items:flex-start;gap:8px">
+  <div style="display:flex;align-items:center;gap:10px"><div class="flow-node" style="min-width:120px">Terminal</div><div class="flow-arrow">→</div><div class="flow-node" style="min-width:120px;background:#1a2e1a">Acquirer</div><div style="font-size:12px;color:var(--text2)">0200 (DE2,3,4,11,14,22,41,49,55)</div></div>
+  <div style="display:flex;align-items:center;gap:10px"><div class="flow-node" style="min-width:120px;background:#1a2e1a">Acquirer</div><div class="flow-arrow">→</div><div class="flow-node" style="min-width:120px;background:#2e1a2e">Network</div><div style="font-size:12px;color:var(--text2)">Route based on BIN</div></div>
+  <div style="display:flex;align-items:center;gap:10px"><div class="flow-node" style="min-width:120px;background:#2e1a2e">Network</div><div class="flow-arrow">→</div><div class="flow-node" style="min-width:120px;background:#2e1a1a">Issuer</div><div style="font-size:12px;color:var(--text2)">Forward 0200</div></div>
+  <div style="display:flex;align-items:center;gap:10px"><div class="flow-node" style="min-width:120px;background:#2e1a1a">Issuer</div><div class="flow-arrow">→</div><div class="flow-node" style="min-width:120px;background:#1a2e1a">Acquirer</div><div style="font-size:12px;color:var(--text2)">0210 (DE39=00, DE38=AUTH_CODE)</div></div>
+  <div style="display:flex;align-items:center;gap:10px"><div class="flow-node" style="min-width:120px;background:#1a2e1a">Acquirer</div><div class="flow-arrow">→</div><div class="flow-node" style="min-width:120px">Terminal</div><div style="font-size:12px;color:var(--text2)">Approved ✅</div></div>
+</div>
+<h3>Flow 2: Reversal After Timeout</h3>
+<p>If the terminal sends a 0200 but never receives a 0210 (network timeout), it must send a 0400 Reversal. DE90 carries the original message details.</p>
+<div class="code-block">Terminal → Acquirer: 0200 STAN:000123  [no response received — timeout]
+Terminal → Acquirer: 0400 STAN:000124
+  DE90: 0200 + 000123 + original date + acquiring ID
+Issuer → Acquirer: 0410 DE39:00 (reversal accepted)</div>
+<h3>Flow 3: Network Sign-On (0800)</h3>
+<div class="code-block">Acquirer → Network: 0800  DE70:001 (Sign-On)  DE11:STAN
+Network  → Acquirer: 0810  DE39:00  DE70:001</div>
+<div class="info-box">💡 STAN (DE11) must be unique per day but wraps at 999999. DE11 + DE41 + DE42 together form the unique transaction identifier for matching.</div>`},
+  emv:{title:"EMV & DE55 in ISO 8583",subtitle:"How chip card data rides inside ISO 8583",content:`
+<h3>What is EMV?</h3>
+<p>EMV (Europay, Mastercard, Visa) is the global standard for chip card payments. When you insert or tap a chip card, the card and terminal exchange cryptographic data. This is carried to the issuer inside ISO 8583 DE55.</p>
+<h3>Why DE55 matters</h3>
+<p>For EMV transactions, DE55 is mandatory for online authorization. It contains the Application Cryptogram (AC) — a unique code the issuer must verify. Without it, the issuer cannot validate the chip transaction.</p>
+<h3>DE55 Format: TLV</h3>
+<div class="code-block">Tag  Length  Value
+9F26  08     A1B2C3D4E5F60708   ← Application Cryptogram (AC)
+9F36  02     0042               ← Application Transaction Counter (ATC)
+95    05     0000000000         ← Terminal Verification Results (TVR)
+9A    03     230315             ← Transaction Date</div>
+<h3>Key EMV Tags</h3>
+<ul>
+  <li><strong>9F26</strong> — Application Cryptogram: Core security element, issuer verifies this.</li>
+  <li><strong>9F36</strong> — Application Transaction Counter: Increments per transaction, detects replays.</li>
+  <li><strong>95</strong> — Terminal Verification Results: Flags from terminal processing.</li>
+  <li><strong>9F10</strong> — Issuer Application Data: Issuer-specific risk scoring data.</li>
+  <li><strong>9F37</strong> — Unpredictable Number: Random terminal value preventing replay attacks.</li>
+  <li><strong>82</strong> — Application Interchange Profile: Card application capabilities.</li>
+</ul>
+<div class="warn-box">⚠️ For contactless (NFC) transactions, DE55 is also required. The entry mode in DE22 (071) indicates contactless.</div>`},
+  testing:{title:"Testing & Certification",subtitle:"How to build and test ISO 8583 integrations",content:`
+<h3>Why Payment Testing is Hard</h3>
+<ul>
+  <li>Exact byte-level formatting — a single wrong character breaks the message</li>
+  <li>Coordinating with acquirer, network simulator, and issuer simulator</li>
+  <li>Hundreds of response code scenarios to cover</li>
+  <li>Timing-sensitive flows (timeout handling, duplicate STAN detection)</li>
+</ul>
+<h3>Types of Testing</h3>
+<ul>
+  <li><strong>Unit:</strong> Test your encoder/decoder in isolation with known hex messages</li>
+  <li><strong>Integration:</strong> Connect to test/sandbox, use test card numbers</li>
+  <li><strong>Certification:</strong> Formal process run by Visa/Mastercard with defined test scripts</li>
+  <li><strong>Regression:</strong> After any change, re-run all scenarios</li>
+</ul>
+<h3>Must-Cover Scenarios</h3>
+<div class="code-block">1.  Successful purchase           DE39=00
+2.  Generic decline               DE39=05
+3.  Insufficient funds            DE39=51
+4.  Expired card                  DE39=33 / 54
+5.  Partial approval              DE39=10
+6.  Timeout → Reversal flow       0200 → 0400
+7.  Duplicate STAN detection      DE39=94
+8.  EMV cryptogram validation     DE55 present
+9.  Incorrect PIN + lockout       DE39=55 → 38/75
+10. Issuer unavailable + retry    DE39=91</div>
+<div class="info-box">💡 Use this tool's Parser to verify captured test messages field by field, the Builder to construct test scenarios, and the Response Codes tab to ensure your application handles all DE39 values.</div>
+<div class="warn-box">⚠️ Never use real card numbers in test messages. Use network-provided test PANs: 4111111111111111 (Visa), 5500005555555559 (Mastercard).</div>`}
+};
+
+function initLearn() {
+  const levelColors = {Beginner:'tag-green',Intermediate:'tag-yellow',Advanced:'tag-red'};
+  document.getElementById('learnModules').innerHTML = LEARN_MODULES.map(m => `
+    <div class="learn-module" onclick="openLesson('${m.id}')">
+      <div class="mod-icon">${m.icon}</div>
+      <div class="mod-level"><span class="tag ${levelColors[m.level]||'tag-gray'}">${m.level}</span></div>
+      <h4>${m.title}</h4>
+      <p>${m.desc}</p>
+    </div>`).join('');
+}
+
+function openLesson(id) {
+  const lesson = LESSON_CONTENT[id];
+  const mod = LEARN_MODULES.find(m => m.id === id);
+  if (!lesson) return;
+  document.getElementById('learnHome').style.display = 'none';
+  const detail = document.getElementById('learnDetail');
+  detail.classList.add('active');
+  detail.innerHTML = `
+    <div class="lesson-nav">
+      <button class="back-btn" onclick="closeLesson()">← Back to Modules</button>
+      <span class="tag tag-gray">${mod ? mod.level : ''}</span>
+    </div>
+    <div class="lesson-body">
+      <h2>${mod ? mod.icon : ''} ${lesson.title}</h2>
+      <div class="subtitle">${lesson.subtitle}</div>
+      ${lesson.content}
+    </div>`;
+}
+
+function closeLesson() {
+  document.getElementById('learnHome').style.display = 'block';
+  const d = document.getElementById('learnDetail');
+  d.classList.remove('active');
+  d.innerHTML = '';
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// ===================== INIT =====================
+initBuilder();
+initRC();
+initLearn();
+
+// ===================== FOOTER =====================
+document.body.insertAdjacentHTML('beforeend', `
+<footer style="background:var(--surface);border-top:1px solid var(--border);margin-top:48px;padding:24px 28px;text-align:center">
+  <div style="max-width:800px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
+      <div style="width:28px;height:28px;background:linear-gradient(135deg,#4f8ef7,#7c5cfc);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#fff">8583</div>
+      <span style="font-weight:700;font-size:15px">ISO 8583 Developer Lab</span>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.7">
+      A free, open browser-based tool for payment professionals — developers, analysts, and product managers.<br>
+      Parse &amp; decode ISO 8583 messages · Build valid hex messages · Look up DE39 response codes · Learn payment fundamentals.
+    </p>
+    <div style="display:flex;justify-content:center;gap:20px;font-size:11px;color:var(--text3);flex-wrap:wrap">
+      <span>🔍 Parser / Decoder</span>
+      <span>🔧 Message Builder</span>
+      <span>📋 Response Code Lookup</span>
+      <span>🎓 Learn ISO 8583</span>
+    </div>
+    <p style="font-size:11px;color:var(--text3);margin-top:12px">
+      Built with ❤️ for the payments community · ISO 8583:1987 / 1993 / 2003 · All processing is done client-side — no data is sent to any server.
+    </p>
+  </div>
+</footer>`);
+</script>
+</body>
+</html>
