@@ -35,7 +35,8 @@
   --warning:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
   --green:#10b981;--orange:#f97316;--purple:#a855f7;
 }
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.main-content{flex:1}
 .nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .nav-brand{display:flex;align-items:center;gap:10px;padding:14px 0;margin-right:16px;flex-shrink:0}
 .nav-brand .logo{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
@@ -175,6 +176,8 @@ textarea{resize:vertical;font-family:'Courier New',monospace;font-size:12px}
     <div class="nav-tab" onclick="showPage('learn')" id="tab-learn"><span class="tab-icon">🎓</span> Learn ISO 8583</div>
   </div>
 </div>
+
+<div class="main-content">
 
 <!-- DECODER -->
 <div class="page active" id="page-decoder">
@@ -1109,7 +1112,9 @@ initLearn();
 
 // ===================== FOOTER =====================
 document.body.insertAdjacentHTML('beforeend', `
-<footer style="background:var(--surface);border-top:1px solid var(--border);margin-top:48px;padding:24px 28px;text-align:center">
+</div><!-- end main-content -->
+
+<footer style="background:var(--surface);border-top:1px solid var(--border);padding:20px 28px;text-align:center;margin-top:0">
   <div style="max-width:800px;margin:0 auto">
     <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
       <div style="width:28px;height:28px;background:linear-gradient(135deg,#4f8ef7,#7c5cfc);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#fff">8583</div>
